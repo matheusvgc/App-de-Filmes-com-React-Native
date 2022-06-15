@@ -5,7 +5,7 @@ import Home from '../pages/Home';
 
 const Stack = createNativeStackNavigator();
 
-function stackRoutes() {
+function StackRoutes() {
     return (
         <Stack.Navigator>
             <Stack.Screen
@@ -19,4 +19,4 @@ function stackRoutes() {
     )
 }
 
-export default stackRoutes
+export default StackRoutes
