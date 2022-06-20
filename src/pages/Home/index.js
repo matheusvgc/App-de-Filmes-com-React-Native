@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 
 import {
     Container,
@@ -16,27 +16,22 @@ import SliderItem from '../../components/SliderItem';
 import { Feather } from '@expo/vector-icons'
 
 import api, { key } from '../../services/api';
-import { getListMovies } from '../../utils/movie'
+import { getListMovies, randomBanner } from '../../utils/movie'
 
 function Home() {
 
     const [nowMovies, setNowMovies] = useState([])
     const [popularMovies, setPopularMovies] = useState([])
     const [topMovies, setTopMovies] = useState([])
+    const [bannerMovie, setBannerMovie] = useState({})
+
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         let isActive = true;
+        const ac = new AbortController();
 
         async function getMovies() {
-
-            // const response = await api.get('/movie/now_playing', {
-            //     params:{
-            //         api_key: key,
-            //         language: 'pt-BR',
-            //         page: 1,
-            //     }
-            // })
-
             const [nowData, popularData, topData] = await Promise.all([
                 api.get('/movie/now_playing', {
                     params:{
@@ -61,19 +56,38 @@ function Home() {
                 })
             ])
 
-            const nowList = getListMovies(10, nowData.data.results)
-            const popularList = getListMovies(10, popularData.data.results)
-            const topList = getListMovies(10, topData.data.results)
+            if(isActive) {
+                const nowList = getListMovies(10, nowData.data.results)
+                const popularList = getListMovies(10, popularData.data.results)
+                const topList = getListMovies(10, topData.data.results)
 
-            setNowMovies(nowList)
-            setPopularMovies(popularList)
-            setTopMovies(topList)
+                setBannerMovie(nowData.data.results[randomBanner(nowData.data.results)])
+    
+                setNowMovies(nowList)
+                setPopularMovies(popularList)
+                setTopMovies(topList)
+    
+                setLoading(false)
+            }
 
         }
 
         getMovies()
 
+        return () => {
+            isActive = false;
+            ac.abort();
+        }
+
     }, [])
+
+    if(loading) {
+        return (
+            <Container>
+                <ActivityIndicator size='large' color='#FFF' />
+            </Container>
+        )
+    }
 
     return (
         <Container>
@@ -99,7 +113,7 @@ function Home() {
                 <BannerButton activeOpacity={0.8} onPress={() => {alert('Teste')}}>
                     <Banner
                         resizeMethod='resize'
-                        source={{ uri: 'https://images.unsplash.com/photo-1634157703702-3c124b455499?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1228&q=80' }}
+                        source={{ uri: `https://image.tmdb.org/t/p/original${bannerMovie.poster_path}` }}
                     />
                 </BannerButton>
 
