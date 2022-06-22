@@ -26,6 +26,8 @@ import Genres from "../../components/Genres";
 
 import ModalLink from "../../components/ModalLink";
 
+import { saveMovie, hasMovie, deleteMovie } from '../../utils/storage'
+
 
 
 function Detail() {
@@ -34,6 +36,7 @@ function Detail() {
 
     const [movie, setMovie] = useState({})
     const [openLink, setOpenLink] = useState(false)
+    const [favoritedMovie, setFavoritedMovie] = useState(false)
 
     useEffect(() => {
         let isActive = true;
@@ -51,6 +54,9 @@ function Detail() {
 
             if(isActive){
                 setMovie(response.data);
+                
+                const isFavorite = await hasMovie(response.data)
+                setFavoritedMovie(isFavorite)
             }
 
         }
@@ -66,6 +72,20 @@ function Detail() {
 
     }, []) 
 
+    async function handleFavoriteMovie(movie) {
+
+        if(favoritedMovie) {
+            await deleteMovie(movie.id);
+            setFavoritedMovie(false)
+            alert('Filme removido dos favoritos!')
+        } else {
+            await saveMovie('@prime-react', movie)
+            alert('Filme salvo nos favoritos!')
+            setFavoritedMovie(false)
+        }
+        
+    }
+
     return (
         <Container>
             <Header>
@@ -78,12 +98,20 @@ function Detail() {
                     />
                 </HeaderButton>
 
-                <HeaderButton>
-                    <Ionicons
+                <HeaderButton onPress={ () => handleFavoriteMovie(movie) }>
+                    { favoritedMovie ? (
+                        <Ionicons
                         name= 'bookmark'
                         size={28}
                         color= '#FFF'
                     />
+                    ) : (
+                        <Ionicons
+                        name= 'bookmark-outline'
+                        size={28}
+                        color= '#FFF'
+                    />
+                    )}
                 </HeaderButton>
 
             </Header>
